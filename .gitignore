@@ -1,0 +1,12 @@
+# Environment files
+.venv
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Compiled Python files
+*.pyo
+*.pyd
