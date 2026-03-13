@@ -10,3 +10,6 @@ __pycache__/
 # Compiled Python files
 *.pyo
 *.pyd
+
+# database
+data/db
