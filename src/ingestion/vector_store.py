@@ -33,8 +33,12 @@ class VectorStore():
             Chroma:
                 Vector store instance.
         """
-        db_exists = os.path.exists(self.persist_directory) and bool(os.listdir(self.persist_directory))
-        print(db_exists)
+        db_exists = (
+            os.path.exists(self.persist_directory)
+            and bool(os.listdir(self.persist_directory))
+            and os.path.exists(os.path.join(self.persist_directory, "chroma.sqlite3"))
+        )
+        
         vector_store = Chroma(
             collection_name=COLLECTION_NAME,
             embedding_function=self.embedding_model,

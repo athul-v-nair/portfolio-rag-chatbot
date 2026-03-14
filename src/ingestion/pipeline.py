@@ -1,5 +1,5 @@
 from langchain_chroma import Chroma
-import os,sys
+import os
 
 from src.ingestion.loaders import Loader
 from src.ingestion.vector_store import VectorStore
@@ -34,9 +34,9 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
             Initialized Chroma vector store containing document embeddings.
     """
     try:
-        if not (os.path.exists(directory)):
-            logger.error(f"Raw data directory not found: {directory}")
-            sys.exit(1)
+        if not os.path.exists(directory):
+            logger.warning(f"Raw data directory not found. Creating: {directory}")
+            os.makedirs(directory, exist_ok=True)
         
         logger.info("Starting data ingestion pipeline")
         
