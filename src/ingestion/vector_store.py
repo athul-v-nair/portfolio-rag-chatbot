@@ -48,7 +48,10 @@ class VectorStore():
         if rebuild and db_exists:
             # If rebuild requested → delete and recreate
             logger.info("Rebuilding vector database")
-            vector_store.delete_collection()
+            
+            # Re initialize the collection
+            vector_store.reset_collection()
+
             vector_store.add_documents(documents=chunks)
 
         elif not db_exists:

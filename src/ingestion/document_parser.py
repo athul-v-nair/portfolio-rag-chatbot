@@ -1,134 +1,136 @@
-from typing import List, Union
+import json
+from typing import List
 from langchain_core.documents import Document
-from unstructured.partition.pdf import partition_pdf
-from unstructured.partition.md import partition_md
-from unstructured.partition.text import partition_text
+from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
+
+from src.utils.logger import logger
+from src.utils.constants import GEMINI_API_KEY
+from src.utils.prompts.parsing_prompt import RESUME_PARSER_PROMPT
 
 class DocumentParser:
     def __init__(self, documents: List[Document]):
-        self.all_documents: List[Document] = []
-        self._parse_files(documents)
+        self.documents = documents
 
-    def _parse_files(self, documents: List[Document]):
-        for doc in documents:
-            parsed_docs = []
-            file_type = doc.metadata.get('file_type')
-            if file_type == 'pdf':
-                parsed_docs = self.parse_pdf(doc.metadata.get('source') , doc.metadata.get('file_name'), file_type)
-            elif file_type == 'md':
-                parsed_docs = self.parse_markdown(doc.metadata.get('source'), doc.metadata.get('file_name'), file_type)
-            elif file_type == 'txt':
-                parsed_docs = self.parse_text(doc.metadata.get('source') , doc.metadata.get('file_name'), file_type)
+        self.model = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            api_key=GEMINI_API_KEY,
+        )
+        # Combining pages as the loader splits the document
+        self.combined_docs = self.combine_pdf_pages()
 
-            self.all_documents.extend(parsed_docs)
+        # Using an LLM to identify pdf sections
+        self.parsed_documents = self.identify_sections()
 
-    def parse_pdf(self, source_file: str, file_name: str, file_type:str ='pdf') -> List[Document]:
-        """
-        Parse a PDF file and return LangChain Documents.
-        """
-        try:
-            elements = partition_pdf(filename=source_file, strategy="auto", languages=["english"])
-            try:
-                document_data = []
-                current_section = "general"
+    def combine_pdf_pages(self):
+        combined_docs = {}
 
-                for element in elements:
-                    category = element.category
-                    text = element.text
-                    if not text:
-                        continue
+        for doc in self.documents:
 
-                    if category == "Title":
-                        current_section = text.lower()
-                    
-                    document_data.append(
-                        Document(
-                            page_content=text,
-                            metadata={
-                                "source": source_file,
-                                "section": current_section,
-                                "element_type": category,
-                                "page_number": getattr(element.metadata, "page_number", 0),
-                                "file_name": file_name,
-                                "file_type": file_type
-                            }
-                        )
-                    )
-                return document_data
-            
-            except Exception as e:
-                raise Exception(f"Error converting elements to documents: {e}")
-            
-        except Exception as e:
-            raise Exception(f"Error parsing PDF {file_name}: {e}")
-        
-    def parse_markdown(self, source_file: str, file_name: str, file_type:str ='md') -> List[Document]:
-        try:
-            elements = partition_md(filename=source_file)
-            try:
-                document_data = []
-                current_section = "general"
+            file_name = doc.metadata.get("file_name")
+            source = doc.metadata.get("source")
+            page_number = doc.metadata.get("page")
 
-                for element in elements:
-                    category = element.category
-                    text = element.text
-                    if not text:
-                        continue
+            combined_docs.setdefault(file_name, "")
+            combined_docs[file_name] += "\n" + doc.page_content
 
-                    if category == "Title":
-                        current_section = text.lower()
-                    
-                    document_data.append(
-                        Document(
-                            page_content=text,
-                            metadata={
-                                "source": source_file,
-                                "section": current_section,
-                                "element_type": category,
-                                "file_name": file_name,
-                                "file_type": file_type
-                            }
-                        )
-                    )
-                return document_data
-            
-            except Exception as e:
-                raise Exception(f"Error converting elements to documents: {e}")
-            
-        except Exception as e:
-            raise Exception(f"Error parsing Markdown {file_name}: {e}")
-        
-    def parse_text(self, source_file: str, file_name: str, file_type:str ='txt') -> List[Document]:
-        """
-        Parse a Text file and return LangChain Documents.
-        """
-        try:
-            document_data = []
-            current_section = "General Text"
+        return combined_docs
+    
+    def identify_sections(self):
 
-            # Read file
-            with open(source_file, "r", encoding="utf-8") as f:
-                text = f.read()
+        combined_files = self.combined_docs
 
-            # Split by double newlines into paragraphs
-            paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        parsed_documents = []
 
-            for idx, para in enumerate(paragraphs):
-                document_data.append(
-                    Document(
-                        page_content=para,
-                        metadata={
-                            "source": source_file,
-                            "section": current_section,
-                            "element_type": "Paragraph",
-                            "paragraph_index": idx,
-                            "file_name": file_name,
-                            "file_type": file_type
-                        }
-                    )
+        for file_name, text in combined_files.items():
+            logger.info("Calling LLM to section the document")
+            response = self.model.invoke(RESUME_PARSER_PROMPT.format(resume_text=text))
+            logger.info(f"Model response: {response}")
+
+            content = response.content.strip()
+
+            content = content.replace("```json", "").replace("```", "")
+
+            parsed = json.loads(content)
+
+            parsed_documents.extend(
+                self.convert_to_documents(parsed, file_name)
+            )
+
+        return parsed_documents
+    
+    def convert_to_documents(self, parsed, file_name):
+        documents = []
+
+        # Summary
+        if parsed.get("summary"):
+            documents.append(
+                Document(
+                    page_content=parsed["summary"],
+                    metadata={
+                        "section": "summary",
+                        "file_name": file_name
+                    }
                 )
+            )
 
-            return document_data
-            
-        except Exception as e:
-            raise Exception(f"Error parsing PDF {file_name}: {e}")
+        # Skills
+        if parsed.get("skills"):
+            documents.append(
+                Document(
+                    page_content=", ".join(parsed["skills"]),
+                    metadata={
+                        "section": "skills",
+                        "file_name": file_name
+                    }
+                )
+            )
+
+        # Projects
+        for project in parsed.get("projects", []):
+            projects_text = ""
+            for project in parsed["projects"]:
+                projects_text += f"Project: {project['title']}\n"
+                projects_text += f"Description:\n{project['description']}\n"
+                projects_text += f"Technologies: {', '.join(project['technologies'])}\n\n"
+
+            documents.append(
+                Document(
+                    page_content=projects_text.strip(),
+                    metadata={"section": "projects", "file_name": file_name}
+                )
+            )
+
+        # Experience
+        for exp in parsed.get("experience", []):
+            exp_text = ""
+            for exp in parsed["experience"]:
+                exp_text += f"Company: {exp['company']}\n"
+                exp_text += f"Role: {exp['role']}\n"
+                exp_text += f"Description:\n{exp['description']}\n\n"
+
+            documents.append(
+                Document(
+                    page_content=exp_text.strip(),
+                    metadata={"section": "experience", "file_name": file_name}
+                )
+            )
+
+        # education
+        for edu in parsed.get("education", []):
+            for edu in parsed["education"]:
+                edu_text += f"College: {edu['college_name']}\n"
+                edu_text += f"Course: {edu['course_name']}\n"
+                edu_text += f"Related Courses: {edu.get('related_courses', '')}\n\n"
+
+            documents.append(
+                Document(
+                    page_content=edu_text.strip(),
+                    metadata={
+                        "section": "education",
+                        "college": edu.get("college_name"),
+                        "file_name": file_name
+                    }
+                )
+            )
+
+        return documents

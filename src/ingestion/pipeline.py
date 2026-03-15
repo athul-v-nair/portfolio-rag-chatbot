@@ -3,9 +3,9 @@ import os
 
 from src.ingestion.loaders import Loader
 from src.ingestion.vector_store import VectorStore
+from src.utils.logger import logger
 from src.ingestion.document_parser import DocumentParser
 from src.ingestion.chunker import Chunker
-from src.utils.logger import logger
 
 from src.utils.constants import DB_PATH, COLLECTION_NAME
 
@@ -53,14 +53,17 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
         # 2 Parse documents
         logger.info("Parsing the documents")
         document_parser = DocumentParser(raw_documents)
-        parsed_documents = document_parser.all_documents
+        parsed_documents = document_parser.parsed_documents
+        logger.info("Parsing Completed")
         logger.info(f"Parsed into {len(parsed_documents)} element(s).")
+        logger.info(f"First 5 Documents into {parsed_documents[:5]}.")
         
         # 3 Chunking
         logger.info("Chunking documents")
         chunker = Chunker()
         chunks = chunker.chunk_documents(parsed_documents)
-
+        logger.info("Chunking Completed")
+        
         # 4 Storing to a vector db after embedding
         logger.info("Creating vector database")
         vector_store = VectorStore(DB_PATH, COLLECTION_NAME)
@@ -72,6 +75,5 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
     except Exception as e:
         raise Exception(f"Error in ingestion pipeline: {e}")
     
-# Running just the data ingestion pipeline
-if __name__ == "__main__":
-    data_ingestion_pipeline('data/raw', rebuild=True)
+# data_ingestion_pipeline(rebuild=True)
+data_ingestion_pipeline(rebuild=False)
