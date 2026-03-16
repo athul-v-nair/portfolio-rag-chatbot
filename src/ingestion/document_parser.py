@@ -4,7 +4,7 @@ from langchain_core.documents import Document
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 
 from src.utils.logger import logger
-from src.utils.constants import GEMINI_API_KEY
+from src.utils.constants import GEMINI_API_KEY, GEMINI_TEXT_GENERATION_MODEL
 from src.utils.prompts.parsing_prompt import RESUME_PARSER_PROMPT
 
 class DocumentParser:
@@ -12,7 +12,7 @@ class DocumentParser:
         self.documents = documents
 
         self.model = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model=GEMINI_TEXT_GENERATION_MODEL,
             api_key=GEMINI_API_KEY,
         )
         # Combining pages as the loader splits the document
