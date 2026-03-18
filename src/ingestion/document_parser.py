@@ -86,7 +86,9 @@ class DocumentParser:
             )
 
         # Projects
-        for project in parsed.get("projects", []):
+        # All projects are concatenated into one Document so the retriever
+        # surfaces the full project list rather than isolated entries.
+        if parsed.get("projects"):
             projects_text = ""
             for project in parsed["projects"]:
                 projects_text += f"Project: {project['title']}\n"
@@ -101,7 +103,7 @@ class DocumentParser:
             )
 
         # Experience
-        for exp in parsed.get("experience", []):
+        if parsed.get("experience"):
             exp_text = ""
             for exp in parsed["experience"]:
                 exp_text += f"Company: {exp['company']}\n"
@@ -116,7 +118,8 @@ class DocumentParser:
             )
 
         # education
-        for edu in parsed.get("education", []):
+        if parsed.get("education"):
+            edu_text = ""
             for edu in parsed["education"]:
                 edu_text += f"College: {edu['college_name']}\n"
                 edu_text += f"Course: {edu['course_name']}\n"
