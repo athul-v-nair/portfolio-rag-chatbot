@@ -74,6 +74,3 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
     
     except Exception as e:
         raise Exception(f"Error in ingestion pipeline: {e}")
-    
-# data_ingestion_pipeline(rebuild=True)
-data_ingestion_pipeline(rebuild=False)
