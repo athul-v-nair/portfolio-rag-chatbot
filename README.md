@@ -21,8 +21,8 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 │  Load    │──▶│  Parse   │──▶│  Chunk   │──▶│  Embed   │──▶│  Store   │
 │          │   │          │   │          │   │          │   │          │
 │ PDF/MD/  │   │ Gemini   │   │ Section- │   │ Gemini   │   │ ChromaDB │
-│ TXT via  │   │ 2.5 Flash│   │ aware    │   │ Embed /  │   │ persisted│
-│ LangChain│   │ → JSON   │   │ chunker  │   │ HF backup│   │ on disk  │
+│ TXT via  │   │ 2.5 Flash│   │ aware    │   │ Embedding│   │ persisted│
+│ LangChain│   │ → JSON   │   │ chunker  │   │          │   │ on disk  │
 └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
  
                               ┌──────────────────────────────────────┐
@@ -40,7 +40,7 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 
 **Chunk:** A section-aware chunker groups parsed elements by `(file_name, section)`. If a section fits within the configured `chunk_size`, it becomes a single chunk. Oversized sections are further split with `RecursiveCharacterTextSplitter` while preserving the `section` metadata on every resulting chunk. Plain text paragraphs follow a simpler path — each paragraph is a chunk unless it exceeds the size limit.
 
-**Embed:** Chunks are encoded using `GoogleGenerativeAIEmbeddings` (`gemini-embedding-2-preview`). If the Google API is unavailable, the pipeline falls back to `HuggingFaceEndpointEmbeddings` (`sentence-transformers/all-MiniLM-L6-v2`).
+**Embed:** Chunks are encoded using `GoogleGenerativeAIEmbeddings` (`gemini-embedding-2-preview`). If the Google API is unavailable, embedding fails and raises an error. The fallback to Hugging Face embeddings has been removed, since any mismatch between the vector embedding model and the query embedding model would cause retrieval to fail.
 
 **Store:** Embeddings and metadata are persisted in a local ChromaDB collection. The store supports incremental upserts and full rebuilds.
 
@@ -107,7 +107,6 @@ pip install -r requirements.txt
  
 ```env
 GEMINI_API_KEY='your_google_api_key'
-HUGGINGFACE_API_KEY='your_huggingface_api_key'          # fallback only
  
 # Vector DB
 COLLECTION_NAME="portfolio_rag"
@@ -118,8 +117,6 @@ DOCS_PATH="data/raw"
  
 # Embedding models
 GEMINI_EMBEDDING_MODEL="gemini-embedding-2-preview"
-BACKUP_EMBEDDING_MODEL="all-MiniLM-L6-v2"
-BACKUP_EMBEDDING_MODEL_REPO_ID="sentence-transformers/all-MiniLM-L6-v2"
  
 # Text generation
 GEMINI_TEXT_GENERATION_MODEL="gemini-2.5-flash"
@@ -191,8 +188,6 @@ curl -X POST http://localhost:8000/chat \
 
 **Metadata preserved end-to-end.** Every chunk retains `file_name`, `section`, `element_type`, `chunk_type`, and (for PDFs) `page_number`. This allows the generation layer to cite sources precisely and supports metadata-filtered retrieval — for example, restricting search to a specific document or section.
 
-**Embedding fallback.** Gemini embeddings offer high quality but require a Google API key and network access. The HuggingFace fallback keeps the pipeline functional in offline or cost-sensitive environments with no code changes required.
-
 **Incremental upserts.** Running the pipeline on a partially-updated `data/raw` directory adds new chunks without touching existing ones. Use `--rebuild` only when a full re-index is needed.
 
 **Stateless chat history.** Server-side session storage adds infrastructure complexity and breaks on free-tier stateless hosting. Keeping history on the client is simpler, more resilient, and equally effective for 5–10 turn conversations.
@@ -248,7 +243,7 @@ Every stored chunk carries the following metadata, available for filtered retrie
 - [x] Vector retrieval (`similarity_search_with_score`, top-K)
 - [x] Generation layer (Gemini 2.5 Flash, score-filtered context)
 - [x] FastAPI serving (`/chat`, `/health`, CORS)
-- [ ] Conversation history (stateless, client-owned, 10-turn cap)
+- [x] Conversation history (stateless, client-owned, 10-turn cap)
 - [ ] RAG evaluation (faithfulness, answer relevance, context recall)
 - [ ] Markdown and plain text ingestion
 - [ ] Reranking (if retrieval precision degrades at scale)
@@ -261,7 +256,6 @@ Every stored chunk carries the following metadata, available for filtered retrie
 |---|---|
 | `langchain`, `langchain-community` | Loaders, splitters, vector store abstraction |
 | `langchain-google-genai` | Gemini embedding model, Gemini Text Generation Model |
-| `langchain-huggingface` | HuggingFace fallback embeddings |
 | `chromadb` | Local vector database |
 | `pypdf` | PDF loading |
 
