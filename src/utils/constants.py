@@ -24,3 +24,7 @@ GENERATION_TEMPERATURE: float = float(os.getenv("GEN_TEMPERATURE", "0.2"))
 GENERATION_MAX_TOKENS: int = int(os.getenv("GEN_MAX_TOKENS", "512"))
 RETRIEVAL_TOP_K: int = int(os.getenv("RETRIEVAL_TOP_K", "3"))
 SCORE_THRESHOLD: float = float(os.getenv("SCORE_THRESHOLD", "0.45"))
+NUMBER_OF_CHATS: int = int(os.getenv("NUMBER_OF_CHATS", "10"))
+
+# Memory Store
+MEMORY_STORE = {}

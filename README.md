@@ -46,7 +46,7 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 
 **Retrieve:** `vector_search.py` runs a similarity search against ChromaDB, returning the top-K chunks sorted by L2 distance (lower = more similar).
  
-**Generate:** `generation.py` filters chunks by score threshold, builds a grounded prompt (resume context + conversation history [to be implemented] + user query), and calls Gemini 2.5 Flash. Answers are strictly grounded in retrieved context — the model is instructed never to fabricate.
+**Generate:** `generation.py` filters chunks by score threshold, builds a grounded prompt (resume context + conversation history + user query), and calls Gemini 2.5 Flash. Answers are strictly grounded in retrieved context — the model is instructed never to fabricate.
 
 ---
  
@@ -82,7 +82,8 @@ Sending the full text to an LLM sidesteps layout detection entirely. The model u
     │   └── vector_search.py        # Similarity search; returns scored chunks
     │
     ├── generation/
-    │   └── generation.py           # RAGGenerator: filter → prompt → Gemini → result
+    │   ├── generation.py           # RAGGenerator: filter → prompt → Gemini → result
+    │   └── memory.py               # Memory store for maintaining recent chat history.
     │
     └── utils/
         ├── prompts/
@@ -128,6 +129,9 @@ GENERATION_TEMPERATURE="0.2"
 GENERATION_MAX_TOKENS="512"
 RETRIEVAL_TOP_K="3"
 SCORE_THRESHOLD="0.45"
+
+# Chat history
+NUMBER_OF_CHATS="10"
 ```
 
 **Add source documents:**
@@ -164,7 +168,7 @@ The API will be available at `http://localhost:8000`. Interactive docs at `http:
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"query": "What projects has Athul built?"}'
+  -d '{"query": "What projects has Athul built?", "session_id": "uuid_0001_x3d"}'
 ```
 
 **Example response:**
@@ -190,6 +194,36 @@ curl -X POST http://localhost:8000/chat \
 **Embedding fallback.** Gemini embeddings offer high quality but require a Google API key and network access. The HuggingFace fallback keeps the pipeline functional in offline or cost-sensitive environments with no code changes required.
 
 **Incremental upserts.** Running the pipeline on a partially-updated `data/raw` directory adds new chunks without touching existing ones. Use `--rebuild` only when a full re-index is needed.
+
+**Stateless chat history.** Server-side session storage adds infrastructure complexity and breaks on free-tier stateless hosting. Keeping history on the client is simpler, more resilient, and equally effective for 5–10 turn conversations.
+
+---
+
+## Chat History
+ 
+The API is **stateless** — the server stores no session data. The frontend is responsible for maintaining history and sending the last N turns with each request.
+ 
+This design works with zero infrastructure on any free-tier hosting platform. The server enforces a hard cap of 10 messages; if the frontend sends more, older turns are silently trimmed.
+ 
+**Recommended frontend pattern:**
+ 
+```javascript
+const history = [];
+ 
+async function sendMessage(userQuery) {
+  const response = await fetch('/chat', {
+    method: 'POST',
+    body: JSON.stringify({ query: userQuery, history: history.slice(-10) })
+  });
+  const data = await response.json();
+ 
+  // Append both turns to local history
+  history.push({ role: 'user',      content: userQuery });
+  history.push({ role: 'assistant', content: data.answer });
+ 
+  return data.answer;
+}
+```
 
 ---
 
