@@ -17,16 +17,21 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 ## Architecture
 
 ```
-┌─────────────┐    ┌──────────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Load      │───>│   Parse          │───>│   Chunk     │───>│   Embed     │───>│   Store     │
-│             │    │                  │    │             │    │             │    │             │
-│ PDF / MD /  │    │ Send to          │    │ Section-    │    │ Google      │    │ ChromaDB    │
-│ TXT via     │    │ Gemini with      │    │ aware for   │    │ Gemini      │    │ (persisted  │
-│ LangChain   │    │ structured       │    │ PDF         │    │ Embeddings  │    │ on disk)    │
-│ loaders     │    │ prompt,returns   │    │             │    │ w/ HF       │    │             │
-│             │    │ JSON. Convert    │    │             │    │ fallback    │    │             │
-│             │    │ to Documents     │    │             │    │             │    │             │
-└─────────────┘    └──────────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+│  Load    │──▶│  Parse   │──▶│  Chunk   │──▶│  Embed   │──▶│  Store   │
+│          │   │          │   │          │   │          │   │          │
+│ PDF/MD/  │   │ Gemini   │   │ Section- │   │ Gemini   │   │ ChromaDB │
+│ TXT via  │   │ 2.5 Flash│   │ aware    │   │ Embed /  │   │ persisted│
+│ LangChain│   │ → JSON   │   │ chunker  │   │ HF backup│   │ on disk  │
+└──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
+ 
+                              ┌──────────────────────────────────────┐
+                              │             Query Flow                │
+                              │                                       │
+                              │  User query ──▶ ChromaDB retrieval   │
+                              │       ──▶ Gemini 2.5 Flash generation │
+                              │       ──▶ Grounded answer + sources  │
+                              └──────────────────────────────────────┘
 ```
 
 **Load:** LangChain loaders (`PyPDFLoader`, `UnstructuredMarkdownLoader`, `TextLoader`) read files from `data/raw` and attach `file_type` and `file_name` metadata.
@@ -39,6 +44,9 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 
 **Store:** Embeddings and metadata are persisted in a local ChromaDB collection. The store supports incremental upserts and full rebuilds.
 
+**Retrieve:** `vector_search.py` runs a similarity search against ChromaDB, returning the top-K chunks sorted by L2 distance (lower = more similar).
+ 
+**Generate:** `generation.py` filters chunks by score threshold, builds a grounded prompt (resume context + conversation history [to be implemented] + user query), and calls Gemini 2.5 Flash. Answers are strictly grounded in retrieved context — the model is instructed never to fabricate.
 ---
  
 ## Why LLM-based Parsing
@@ -54,24 +62,33 @@ Sending the full text to an LLM sidesteps layout detection entirely. The model u
 ```
 .
 ├── data/
-│   ├── raw/                    # Source documents (PDF, MD, TXT)
-│   └── db/                     # ChromaDB persisted files
+│   ├── raw/                        # Source documents (PDF, MD, TXT)
+│   └── db/                         # ChromaDB persisted files
+│
+├── api/
+│   └── api.py                      # FastAPI app — POST /chat, GET /health
 │
 └── src/
     ├── ingestion/
-    │   ├── loaders.py          # File type detection and LangChain loaders
-    │   ├── document_parser.py  # Page reassembly, LLM sectioning, JSON-to-Document conversion
-    │   ├── chunker.py          # Chunk ID assignment; splits oversized sections
-    │   ├── embedding.py        # Embedding model init with fallback logic
-    │   ├── vector_store.py     # ChromaDB wrapper (add, search, retriever)
-    │   └── pipeline.py         # Orchestrates all ingestion stages
+    │   ├── loaders.py              # File type detection and LangChain loaders
+    │   ├── document_parser.py      # Page reassembly, LLM sectioning, JSON → Document
+    │   ├── chunker.py              # Chunk ID assignment; splits oversized sections
+    │   ├── embedding.py            # Embedding model init with HF fallback
+    │   ├── vector_store.py         # ChromaDB wrapper (add, upsert, search)
+    │   └── pipeline.py             # Orchestrates all ingestion stages
     │
-    ├── generation/             # (in progress) LLM chain and prompt logic
-    ├── retrival/               # (in progress) Retriever configurations
+    ├── retrieval/
+    │   └── vector_search.py        # Similarity search; returns scored chunks
+    │
+    ├── generation/
+    │   └── generation.py           # RAGGenerator: filter → prompt → Gemini → result
     │
     └── utils/
-        ├── constants.py        # Paths, model names, config values
-        └── logger.py           # Shared logger setup
+        ├── prompts/
+        │   ├── generation_prompt.py  # System prompt + context + history assembly
+        │   └── parsing_prompt.py     # Structured JSON extraction prompt for resume
+        ├── constants.py              # Paths, model names, config values
+        └── logger.py                 # Shared logger setup
 ```
 
 ---
@@ -84,11 +101,32 @@ Sending the full text to an LLM sidesteps layout detection entirely. The model u
 pip install -r requirements.txt
 ```
 
-**Environment variables:**
-
+**Environment variables** — copy the block below into a `.env` file at the project root:
+ 
 ```env
-GOOGLE_API_KEY=your_google_api_key
-HUGGINGFACE_API_KEY=your_huggingface_api_key   # fallback only
+GEMINI_API_KEY='your_google_api_key'
+HUGGINGFACE_API_KEY='your_huggingface_api_key'          # fallback only
+ 
+# Vector DB
+COLLECTION_NAME="portfolio_rag"
+DB_PATH='data/db'
+ 
+# Document paths
+DOCS_PATH="data/raw"
+ 
+# Embedding models
+GEMINI_EMBEDDING_MODEL="gemini-embedding-2-preview"
+BACKUP_EMBEDDING_MODEL="all-MiniLM-L6-v2"
+BACKUP_EMBEDDING_MODEL_REPO_ID="sentence-transformers/all-MiniLM-L6-v2"
+ 
+# Text generation
+GEMINI_TEXT_GENERATION_MODEL="gemini-2.5-flash"
+ 
+# Generation tuning
+GENERATION_TEMPERATURE="0.2"
+GENERATION_MAX_TOKENS="512"
+RETRIEVAL_TOP_K="3"
+SCORE_THRESHOLD="0.45"
 ```
 
 **Add source documents:**
@@ -97,11 +135,47 @@ Place `.pdf`, `.md`, or `.txt` files in `data/raw/`.
 
 ---
 
-## Running the Pipeline
-
+## Running the Project
+ 
+### 1. Ingest documents
+ 
 ```bash
-# Ingest documents
 python src/ingestion/pipeline.py
+```
+ 
+For a full rebuild (drops and recreates the ChromaDB collection):
+ 
+```bash
+python src/ingestion/pipeline.py --rebuild
+```
+ 
+### 2. Start the API server
+ 
+```bash
+uvicorn api.api:app --reload --port 8000
+```
+ 
+The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+ 
+### 3. Send a query
+ 
+**Simple query:**
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What projects has Athul built?"}'
+```
+
+**Example response:**
+```json
+{
+  "answer": "Athul built Immersify using AWS Bedrock, AWS Transcribe, and AWS S3.",
+  "sources": [
+    {"section": "projects", "file_name": "Athul_AI_Engineer_Resume.pdf", "chunk_id": "..."}
+  ],
+  "latency_ms": 1243,
+  "was_context_used": true
+}
 ```
 
 ---
@@ -122,13 +196,27 @@ python src/ingestion/pipeline.py
  
 Every stored chunk carries the following metadata, available for filtered retrieval:
  
-| Key           | Example value                        | Description                          |
+| Key           | Example value                           | Description                          |
 |---------------|-----------------------------------------|--------------------------------------|
 | `file_name`   | `Athul_AI_Engineer_Resume.pdf`          | Source file                          |
 | `section`     | `project`                               | Resume section identified by the LLM |
 | `chunk_index` | `0`                                     | Position within the section          |
 | `chunk_id`    | `Athul_resume_section_projects_3f2a1b4c`| Unique ID for the chunk in ChromaDB  |
 | `college`     | `MIT` *(education only)*                | College name for filtered retrieval  |
+
+
+---
+ 
+## Roadmap
+ 
+- [x] Data ingestion pipeline (PDF → structured sections → ChromaDB)
+- [x] Vector retrieval (`similarity_search_with_score`, top-K)
+- [x] Generation layer (Gemini 2.5 Flash, score-filtered context)
+- [x] FastAPI serving (`/chat`, `/health`, CORS)
+- [ ] Conversation history (stateless, client-owned, 10-turn cap)
+- [ ] RAG evaluation (faithfulness, answer relevance, context recall)
+- [ ] Markdown and plain text ingestion
+- [ ] Reranking (if retrieval precision degrades at scale)
  
 ---
 
@@ -137,9 +225,8 @@ Every stored chunk carries the following metadata, available for filtered retrie
 | Package | Purpose |
 |---|---|
 | `langchain`, `langchain-community` | Loaders, splitters, vector store abstraction |
-| `langchain-google-genai` | Gemini embedding model |
+| `langchain-google-genai` | Gemini embedding model, Gemini Text Generation Model |
 | `langchain-huggingface` | HuggingFace fallback embeddings |
-| `unstructured[pdf,md]` | Structural parsing of PDF and Markdown |
 | `chromadb` | Local vector database |
 | `pypdf` | PDF loading |
 
@@ -147,4 +234,4 @@ Every stored chunk carries the following metadata, available for filtered retrie
 
 **Athul V Nair** — [GitHub](https://github.com/athul-v-nair)
 
-*Build for integrating with Personal Portfolio Page*
+<p align="center"><i>Build for integrating with Personal Portfolio Page</i></p>
