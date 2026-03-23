@@ -47,6 +47,7 @@ This pipeline solves that by using a Gemini LLM to read the full document and re
 **Retrieve:** `vector_search.py` runs a similarity search against ChromaDB, returning the top-K chunks sorted by L2 distance (lower = more similar).
  
 **Generate:** `generation.py` filters chunks by score threshold, builds a grounded prompt (resume context + conversation history [to be implemented] + user query), and calls Gemini 2.5 Flash. Answers are strictly grounded in retrieved context — the model is instructed never to fabricate.
+
 ---
  
 ## Why LLM-based Parsing
