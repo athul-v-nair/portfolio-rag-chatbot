@@ -25,7 +25,4 @@ def evaluation_pipeline(dataset_path="src/evaluation/evaluation_dataset.json", t
     return results, summary
 
 if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv()
-    
     evaluation_pipeline()

@@ -6,14 +6,25 @@ from src.generation.generation import Generator
 from src.utils.constants import MEMORY_STORE
 
 class RAGEvaluator:
+    """
+    Evaluates Retrieval-Augmented Generation (RAG) pipelines.
+
+    Includes:
+    - Retrieval metrics (Recall@K, MRR, Precision)
+    - Generation metric (Answer similarity)
+    """
     def __init__(self):
         self.generator = Generator()
 
     # -------------------------
     # RETRIEVAL METRICS
     # -------------------------
-
     def recall_at_k(self, retrieved_docs, keywords):
+        """
+        Compute Recall@K.
+
+        Returns 1 if any retrieved document contains a keyword, else 0.
+        """
         for doc in retrieved_docs:
             content = doc["content"].lower()
             if any(k.lower() in content for k in keywords):
@@ -21,6 +32,11 @@ class RAGEvaluator:
         return 0
 
     def reciprocal_rank(self, retrieved_docs, keywords):
+        """
+        Compute Mean Reciprocal Rank (MRR) for a single query.
+
+        Returns inverse rank of first relevant document.
+        """
         for idx, doc in enumerate(retrieved_docs, start=1):
             content = doc["content"].lower()
             if any(k.lower() in content for k in keywords):
@@ -28,6 +44,11 @@ class RAGEvaluator:
         return 0
 
     def context_precision(self, retrieved_docs, keywords):
+        """
+        Compute precision over retrieved documents.
+
+        Measures fraction of retrieved docs that are relevant.
+        """
         relevant = 0
         for doc in retrieved_docs:
             content = doc["content"].lower()
@@ -38,8 +59,12 @@ class RAGEvaluator:
     # -------------------------
     # GENERATION METRIC
     # -------------------------
-
     def answer_similarity(self, answer, ground_truth):
+        """
+        Compute token overlap similarity between generated answer and ground truth.
+
+        Uses simple set-based overlap (recall-style).
+        """
         a_tokens = set(answer.lower().split())
         gt_tokens = set(ground_truth.lower().split())
 
@@ -51,9 +76,17 @@ class RAGEvaluator:
     # -------------------------
     # FULL EVALUATION
     # -------------------------
-
     def evaluate(self, dataset: List[Dict], top_k=3):
+        """
+        Run full RAG evaluation on a dataset.
 
+        Args:
+            dataset: List of evaluation samples
+            top_k: Number of documents to retrieve
+
+        Returns:
+            List of per-query evaluation metrics
+        """
         results = []
 
         for sample in dataset:
@@ -91,6 +124,11 @@ class RAGEvaluator:
     
     @staticmethod
     def summarize(results):
+        """
+        Aggregate evaluation metrics across dataset.
+
+        Returns average Recall, MRR, Precision, and Similarity.
+        """
         return {
             "avg_recall": np.mean([r["recall@k"] for r in results]),
             "avg_mrr": np.mean([r["mrr"] for r in results]),
