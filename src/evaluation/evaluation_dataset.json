@@ -1,0 +1,32 @@
+[
+  {
+    "query": "What projects has Athul built?",
+    "ground_truth_answer": "Text Generation Transformer, Immersify, Contrack, Perceptron",
+    "relevant_doc_keywords": ["Transformer", "Immersify", "Contrack", "Perceptron"]
+  },
+  {
+    "query": "What is Immersify?",
+    "ground_truth_answer": "AI powered immersive reading application for kids and visually impaired",
+    "relevant_doc_keywords": ["immersive", "reading", "audio"]
+  },
+  {
+    "query": "Which AWS services were used in Immersify?",
+    "ground_truth_answer": "AWS Bedrock, AWS Transcribe, AWS S3, AWS OpenSearch",
+    "relevant_doc_keywords": ["Bedrock", "Transcribe", "S3", "OpenSearch"]
+  },
+  {
+    "query": "What model architecture was implemented in the transformer project?",
+    "ground_truth_answer": "Decoder-only transformer with causal self-attention",
+    "relevant_doc_keywords": ["decoder", "attention", "transformer"]
+  },
+  {
+    "query": "What technologies are used in Contrack?",
+    "ground_truth_answer": "React.js, Laravel, PHP, MySQL",
+    "relevant_doc_keywords": ["React", "Laravel", "PHP", "MySQL"]
+  },
+  {
+    "query": "What does the perceptron project demonstrate?",
+    "ground_truth_answer": "Forward propagation, backpropagation, gradient descent",
+    "relevant_doc_keywords": ["forward", "backpropagation", "gradient"]
+  }
+]
