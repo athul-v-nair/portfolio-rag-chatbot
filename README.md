@@ -63,27 +63,32 @@ Sending the full text to an LLM sidesteps layout detection entirely. The model u
 ```
 .
 ├── data/
-│   ├── raw/                        # Source documents (PDF, MD, TXT)
-│   └── db/                         # ChromaDB persisted files
+│   ├── raw/                          # Source documents (PDF, MD, TXT)
+│   └── db/                           # ChromaDB persisted files
 │
 ├── api/
-│   └── api.py                      # FastAPI app — POST /chat, GET /health
+│   └── api.py                        # FastAPI app — POST /chat, GET /health
 │
 └── src/
     ├── ingestion/
-    │   ├── loaders.py              # File type detection and LangChain loaders
-    │   ├── document_parser.py      # Page reassembly, LLM sectioning, JSON → Document
-    │   ├── chunker.py              # Chunk ID assignment; splits oversized sections
-    │   ├── embedding.py            # Embedding model init with HF fallback
-    │   ├── vector_store.py         # ChromaDB wrapper (add, upsert, search)
-    │   └── pipeline.py             # Orchestrates all ingestion stages
+    │   ├── loaders.py                # File type detection and LangChain loaders
+    │   ├── document_parser.py        # Page reassembly, LLM sectioning, JSON → Document
+    │   ├── chunker.py                # Chunk ID assignment; splits oversized sections
+    │   ├── embedding.py              # Gemini embedding model init
+    │   ├── vector_store.py           # ChromaDB wrapper (add, upsert, search)
+    │   └── pipeline.py               # Orchestrates all ingestion stages
     │
     ├── retrieval/
-    │   └── vector_search.py        # Similarity search; returns scored chunks
+    │   └── vector_search.py          # Similarity search; returns scored chunks
     │
     ├── generation/
-    │   ├── generation.py           # RAGGenerator: filter → prompt → Gemini → result
-    │   └── memory.py               # Memory store for maintaining recent chat history.
+    │   ├── generation.py             # RAGGenerator: filter → prompt → Gemini → result
+    │   └── memory.py                 # In-memory store for recent chat history
+    │
+    ├── evaluation/
+    │   ├── evaluator.py              # RAGEvaluator: retrieval + generation metrics
+    │   ├── evaluation_pipeline.py    # Runs evaluation and prints summary
+    │   └── evaluation_dataset.json   # Ground-truth Q&A pairs with keyword anchors
     │
     └── utils/
         ├── prompts/
@@ -180,6 +185,83 @@ curl -X POST http://localhost:8000/chat \
 }
 ```
 
+### 4. Run evaluation
+ 
+```bash
+python src/evaluation/evaluation_pipeline.py
+```
+
+---
+
+## API Reference
+ 
+### `POST /chat`
+ 
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `query` | string | Yes | User's question (max 500 chars) |
+| `session_id` | string | Yes | Session identifier for chat history lookup |
+| `top_k` | int | No | Chunks to retrieve (default: 3, max: 10) |
+
+---
+ 
+## Chat History
+ 
+Chat history is maintained server-side in memory, keyed by `session_id`. The server retains the last `NUMBER_OF_CHATS` turns (default: 10) per session and injects them into the generation prompt so the model can resolve follow-up questions like "which of those used AWS?".
+ 
+History is scoped to the current process and is not persisted across server restarts. For a portfolio chatbot this is an acceptable trade-off — sessions are short-lived and free-tier hosting platforms restart infrequently.
+ 
+---
+ 
+## RAG Evaluation
+ 
+The evaluation module measures both retrieval quality and generation quality against a curated ground-truth dataset.
+ 
+### Metrics
+ 
+| Metric | What it measures |
+|---|---|
+| **Recall@K** | Whether at least one relevant chunk was retrieved in the top-K results |
+| **MRR** (Mean Reciprocal Rank) | How highly the first relevant chunk is ranked — 1.0 means it was always rank 1 |
+| **Context Precision** | Fraction of retrieved chunks that are actually relevant — penalizes noisy retrieval |
+| **Answer Similarity** | Token-level overlap between the generated answer and the ground-truth answer |
+ 
+### Running the evaluator
+ 
+```bash
+python src/evaluation/evaluation_pipeline.py
+```
+ 
+The dataset lives at `src/evaluation/evaluation_dataset.json`. Each entry contains a query, a ground-truth answer, and keyword anchors used to judge chunk relevance:
+ 
+```json
+{
+  "query": "Which AWS services were used in Immersify?",
+  "ground_truth_answer": "AWS Bedrock, AWS Transcribe, AWS S3, AWS OpenSearch",
+  "relevant_doc_keywords": ["Bedrock", "Transcribe", "S3", "OpenSearch"]
+}
+```
+ 
+### Results (v1 — 6 queries, top_k=3)
+ 
+| Query | Recall@3 | MRR | Context Precision | Answer Similarity |
+|---|---|---|---|---|
+| What projects has Athul built? | 1.0 | 1.0 | 0.67 | 0.50 |
+| What is Immersify? | 1.0 | 1.0 | 0.33 | 0.40 |
+| Which AWS services were used in Immersify? | 1.0 | 1.0 | 0.33 | 0.40 |
+| What model architecture was used in the transformer project? | 1.0 | 1.0 | 0.67 | 0.60 |
+| What technologies are used in Contrack? | 1.0 | 1.0 | 0.67 | 0.25 |
+| What does the perceptron project demonstrate? | 1.0 | 1.0 | 0.33 | 0.60 |
+| **Average** | **1.0** | **1.0** | **0.50** | **0.46** |
+ 
+### Interpretation
+ 
+**Retrieval is strong.** Perfect Recall@3 and MRR of 1.0 across all queries means the correct chunk is always retrieved and always ranked first. No reranking is needed at this scale.
+ 
+**Context Precision of 0.50** means on average one of the three retrieved chunks is not directly relevant. This is expected with top_k=3 on a small document — reducing to top_k=2 is worth experimenting with given the perfect MRR already places the correct chunk at rank 1.
+ 
+**Answer Similarity of 0.46** reflects the limitations of token-overlap scoring rather than a generation quality problem. The metric counts exact word matches against a short reference string; a correct but more verbose answer scores lower. Qualitative review confirms the answers are factually accurate. Replacing this metric with an embedding-based semantic similarity score is the next evaluation improvement.
+
 ---
 
 ## Key Design Decisions
@@ -244,7 +326,9 @@ Every stored chunk carries the following metadata, available for filtered retrie
 - [x] Generation layer (Gemini 2.5 Flash, score-filtered context)
 - [x] FastAPI serving (`/chat`, `/health`, CORS)
 - [x] Conversation history (stateless, client-owned, 10-turn cap)
-- [ ] RAG evaluation (faithfulness, answer relevance, context recall)
+- [x] RAG evaluation (Recall@K, MRR, Context Precision, Answer Similarity)
+- [ ] Docker setup and containerized deployment
+- [ ] Semantic answer similarity metric (embedding-based, replaces token overlap)
 - [ ] Markdown and plain text ingestion
 - [ ] Reranking (if retrieval precision degrades at scale)
  
@@ -258,6 +342,10 @@ Every stored chunk carries the following metadata, available for filtered retrie
 | `langchain-google-genai` | Gemini embedding model, Gemini Text Generation Model |
 | `chromadb` | Local vector database |
 | `pypdf` | PDF loading |
+| `fastapi`, `uvicorn` | API server |
+| `pydantic` | Request/response validation |
+| `python-dotenv` | Environment variable loading |
+| `numpy` | Evaluation metric aggregation |
 
 ## Author
 
