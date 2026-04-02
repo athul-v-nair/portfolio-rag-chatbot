@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import PyPDFLoader, UnstructuredMarkdownLoader, TextLoader 
+from langchain_community.document_loaders import PyPDFLoader, TextLoader 
 from pathlib import Path
 from langchain_core.documents import Document
 from typing import List
@@ -80,7 +80,7 @@ class Loader():
             List[Document]: LangChain Document objects with metadata
         """
         try:
-            loader = UnstructuredMarkdownLoader(file_path)
+            loader = TextLoader(file_path)
             md_documents = loader.load()
             
             # Adding some more metadata

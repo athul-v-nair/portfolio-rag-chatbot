@@ -1,8 +1,13 @@
 services:
   - type: web
     name: portfolio-rag-chatbot
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn api.api:app --host 0.0.0.0 --port $PORT"
+    runtime: docker
     plan: free
     autoDeploy: false
+    envVars:
+      - key: PORT
+        value: 8000
+
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    dockerCommand: "uvicorn api.api:app --host [IP_ADDRESS] --port $PORT"
