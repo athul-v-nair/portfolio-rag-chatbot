@@ -11,7 +11,7 @@ from src.generation.generation import Generator
 class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=500, description="User question")
     session_id: str = Field(..., description="Unique Session ID")
-    top_k: int = Field(..., default=3, description="Number of top answers to retrieve")
+    top_k: int = Field(default=3, description="Number of top answers to retrieve")
 
 # FastAPI Setup
 @asynccontextmanager
