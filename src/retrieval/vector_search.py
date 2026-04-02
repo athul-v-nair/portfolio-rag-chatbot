@@ -4,6 +4,23 @@ from src.utils.constants import DB_PATH, COLLECTION_NAME
 from src.ingestion.embedding import EmbeddingModel
 from src.utils.logger import logger
 
+_VECTOR_DB = None
+
+def get_vector_db() -> Chroma:
+    """
+    Initialize or return the singleton Chroma vector DB instance.
+    """
+    global _VECTOR_DB
+    if _VECTOR_DB is None:
+        logger.info("Initializing Vector Database Instance...")
+        embedding_model = EmbeddingModel().model
+        _VECTOR_DB = Chroma(
+            persist_directory=DB_PATH,
+            collection_name=COLLECTION_NAME,
+            embedding_function=embedding_model
+        )
+    return _VECTOR_DB
+
 def search_vector_db(query: str, top_k: int = 5) -> list:
     """
     Search vector database for similar documents.
@@ -28,13 +45,7 @@ def search_vector_db(query: str, top_k: int = 5) -> list:
             database initialization, or similarity search.
 
     """
-    embedding_model = EmbeddingModel().model
-
-    vector_db = Chroma(
-        persist_directory=DB_PATH,
-        collection_name=COLLECTION_NAME,
-        embedding_function=embedding_model
-    )
+    vector_db = get_vector_db()
 
     results = vector_db.similarity_search_with_score(query,top_k)
     

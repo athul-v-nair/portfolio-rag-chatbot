@@ -1,0 +1,41 @@
+{
+    "ingested_at": "2026-04-02T08:11:16.897735",
+    "documents": [
+        {
+            "content": "AI Engineer with a strong foundation in machine learning and deep learning systems, transitioning from a professional software engineering background. Passionate about building AI-powered applications using Generative AI frameworks and large language models, actively developing hands-on projects exploring real-world use cases.",
+            "metadata": {
+                "section": "summary",
+                "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        },
+        {
+            "content": "Python, JavaScript, PHP, SQL, PyTorch, Scikit-learn, NumPy, Pandas, Matplotlib, Transformers, NLP, Retrieval-Augmented Generation (RAG), LangChain, Agentic AI, Docker, Git, GitHub, FastAPI, Model Checkpointing, React.js, Laravel, MySQL, REST APIs",
+            "metadata": {
+                "section": "skills",
+                "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        },
+        {
+            "content": "Project: Text Generation Transformer (From Scratch + MLOps)\nDescription:\nImplemented a decoder-only Transformer from scratch in PyTorch for autoregressive text generation using WikiText-2. Designed core components like multi-head causal self-attention and positional embeddings. Built a modular architecture and training pipeline with checkpointing and perplexity evaluation. Developed multiple text generation strategies and created an API inference service using FastAPI, containerized with Docker.\nTechnologies: PyTorch, FastAPI, Docker, Transformers\n\nProject: Immersify \u2013 AI Powered Immersive Reading Experience\nDescription:\nDeveloped an AI-powered accessibility application generating immersive sound experiences during read-aloud sessions. Implemented real-time identification of sound-producing words to trigger contextual audio effects. Used AWS Bedrock for model integration, AWS Transcribe for speech-to-text, and AWS S3 for data storage. Experimented with AWS OpenSearch for semantic search.\nTechnologies: AWS Bedrock, AWS Transcribe, AWS S3, AWS OpenSearch, AI\n\nProject: Contrack - Contract Management System\nDescription:\nBuilt a full-stack SaaS platform for enterprise contract management and revenue tracking. Implemented CRUD operations, role-based access control, and SSO authentication. Designed analytics dashboards for monitoring contract revenue and business insights.\nTechnologies: React.js, Laravel, PHP, MySQL, REST APIs\n\nProject: Perceptron From Scratch\nDescription:\nImplemented a perceptron neural network from scratch using NumPy to understand deep learning mechanics. Demonstrated forward propagation, backpropagation, and gradient descent without ML frameworks. Trained and evaluated the model on the Diabetes dataset.\nTechnologies: NumPy, Perceptron",
+            "metadata": {
+                "section": "projects",
+                "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        },
+        {
+            "content": "Company: Experion Technologies\nRole: Software Engineer\nDescription:\nDelivered web analytics solutions for a US-based automobile manufacturer using Adobe Experience Platform, supporting campaigns reaching 2M+ monthly visitors. Built website-wide event tagging infrastructure for 100+ custom user interactions. Integrated third-party marketing and analytics pixels. Built and analyzed analytics dashboards to support product and marketing decisions. Collaborated with stakeholders and clients, contributing to securing 2 additional projects.\n\nCompany: Experion Technologies\nRole: Associate Software Engineer\nDescription:\nWorked on multiple international projects delivering production-ready web applications. Integrated CRM systems with product platforms to improve customer acquisition workflows. Maintained and optimized production systems by resolving bugs and improving application performance. Migrated legacy technology stacks to newer frameworks, enhancing maintainability and system performance.\n\nCompany: Experion Technologies\nRole: Trainee Software Engineer\nDescription:\nTrained in full-stack web development and built production-ready applications. Developed and deployed a Contract Management System (Contrack) for tracking enterprise contracts and revenue projections. Created and released 10+ REST API endpoints with comprehensive error handling and validation. Collaborated with a 7-member team to deliver the platform.",
+            "metadata": {
+                "section": "experience",
+                "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        },
+        {
+            "content": "College: SCMS School of Engineering and Technology\nCourse: Bachelor of Technology, Computer Science and Engineering\nRelated Courses: Artificial Intelligence, Machine Learning, Database Management Systems, Data Structures & Algorithms",
+            "metadata": {
+                "section": "education",
+                "college": "SCMS School of Engineering and Technology",
+                "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        }
+    ]
+}

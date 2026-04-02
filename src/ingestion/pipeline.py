@@ -64,6 +64,28 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
         chunks = chunker.chunk_documents(parsed_documents)
         logger.info("Chunking Completed")
         
+        # Save metadata for versioning documents
+        logger.info("Saving metadata for version control")
+        try:
+            from datetime import datetime
+            
+            metadata_list = [
+                {
+                    "content": doc.page_content,
+                    "metadata": doc.metadata
+                } for doc in parsed_documents
+            ]
+            version_data = {
+                "ingested_at": datetime.utcnow().isoformat(),
+                "documents": metadata_list
+            }
+            os.makedirs("data", exist_ok=True)
+            with open("data/metadata.json", "w", encoding="utf-8") as f:
+                import json
+                json.dump(version_data, f, indent=4)
+        except Exception as meta_ex:
+            logger.warning(f"Failed to save metadata: {meta_ex}")
+
         # 4 Storing to a vector db after embedding
         logger.info("Creating vector database")
         vector_store = VectorStore(DB_PATH, COLLECTION_NAME)
@@ -74,3 +96,6 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
     
     except Exception as e:
         raise Exception(f"Error in ingestion pipeline: {e}")
+
+if __name__ == "__main__":
+    data_ingestion_pipeline()

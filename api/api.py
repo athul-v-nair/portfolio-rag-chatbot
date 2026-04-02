@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 import time
 
 from src.generation.generation import Generator
+from src.retrieval.vector_search import get_vector_db
 
 # Pydantic schemas
 class ChatRequest(BaseModel):
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
             Control is yielded back to the application runtime.
     """
     # Startup logic
+    get_vector_db() # Preload the vector DB instance
     app.state.generator = Generator()
 
     yield

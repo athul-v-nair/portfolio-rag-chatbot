@@ -11,5 +11,5 @@ __pycache__/
 *.pyo
 *.pyd
 
-# database
-data/db
+# database -> Commented for easy hosting and cheaper hosting on render
+# data/db

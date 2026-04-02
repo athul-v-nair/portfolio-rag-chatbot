@@ -327,7 +327,8 @@ Every stored chunk carries the following metadata, available for filtered retrie
 - [x] FastAPI serving (`/chat`, `/health`, CORS)
 - [x] Conversation history (stateless, client-owned, 10-turn cap)
 - [x] RAG evaluation (Recall@K, MRR, Context Precision, Answer Similarity)
-- [ ] Docker setup and containerized deployment
+- [x] Docker setup and containerized deployment
+- [ ] Rate Limiting and Generation Model Fallback
 - [ ] Semantic answer similarity metric (embedding-based, replaces token overlap)
 - [ ] Markdown and plain text ingestion
 - [ ] Reranking (if retrieval precision degrades at scale)

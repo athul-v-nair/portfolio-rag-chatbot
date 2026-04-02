@@ -24,9 +24,9 @@ class Chunker:
 
     def chunk_documents(self, documents: List[Document]) -> List[Document]:
         # Section-level chunks are already done; just add metadata
-        section = doc.metadata.get("section", "unknown")
         chunked_docs = []
         for doc in documents:
+            section = doc.metadata.get("section", "unknown")
             new_metadata = doc.metadata.copy()
             new_metadata["chunk_index"] = 0
             new_metadata["chunk_id"] = f"{new_metadata.get('file_name', 'unknown_file')}_section_{section}_{uuid.uuid4().hex[:8]}"
