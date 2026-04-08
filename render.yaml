@@ -10,4 +10,3 @@ services:
 
     dockerfilePath: Dockerfile
     dockerContext: .
-    dockerCommand: "uvicorn api.api:app --host [IP_ADDRESS] --port $PORT"
