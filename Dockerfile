@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir -U pip && \
 COPY api/ api/
 COPY src/ src/
 COPY data/ data/
-COPY .env .env
+# COPY .env .env # handled in render env
 
 # Expose the app's port
 EXPOSE 8000
