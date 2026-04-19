@@ -1,8 +1,8 @@
 {
-    "ingested_at": "2026-04-02T08:11:16.897735",
+    "ingested_at": "2026-04-19T09:31:34.715205",
     "documents": [
         {
-            "content": "AI Engineer with a strong foundation in machine learning and deep learning systems, transitioning from a professional software engineering background. Passionate about building AI-powered applications using Generative AI frameworks and large language models, actively developing hands-on projects exploring real-world use cases.",
+            "content": "AI Engineer with a strong foundation in machine learning and deep learning systems, transitioning from a professional software engineering background. Passionate about building AI-powered applications using Generative AI frameworks and large language models, actively developing hands-on projects exploring real-world use cases of GenAI systems.",
             "metadata": {
                 "section": "summary",
                 "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
@@ -16,14 +16,14 @@
             }
         },
         {
-            "content": "Project: Text Generation Transformer (From Scratch + MLOps)\nDescription:\nImplemented a decoder-only Transformer from scratch in PyTorch for autoregressive text generation using WikiText-2. Designed core components like multi-head causal self-attention and positional embeddings. Built a modular architecture and training pipeline with checkpointing and perplexity evaluation. Developed multiple text generation strategies and created an API inference service using FastAPI, containerized with Docker.\nTechnologies: PyTorch, FastAPI, Docker, Transformers\n\nProject: Immersify \u2013 AI Powered Immersive Reading Experience\nDescription:\nDeveloped an AI-powered accessibility application generating immersive sound experiences during read-aloud sessions. Implemented real-time identification of sound-producing words to trigger contextual audio effects. Used AWS Bedrock for model integration, AWS Transcribe for speech-to-text, and AWS S3 for data storage. Experimented with AWS OpenSearch for semantic search.\nTechnologies: AWS Bedrock, AWS Transcribe, AWS S3, AWS OpenSearch, AI\n\nProject: Contrack - Contract Management System\nDescription:\nBuilt a full-stack SaaS platform for enterprise contract management and revenue tracking. Implemented CRUD operations, role-based access control, and SSO authentication. Designed analytics dashboards for monitoring contract revenue and business insights.\nTechnologies: React.js, Laravel, PHP, MySQL, REST APIs\n\nProject: Perceptron From Scratch\nDescription:\nImplemented a perceptron neural network from scratch using NumPy to understand deep learning mechanics. Demonstrated forward propagation, backpropagation, and gradient descent without ML frameworks. Trained and evaluated the model on the Diabetes dataset.\nTechnologies: NumPy, Perceptron",
+            "content": "Project: Text Generation Transformer (From Scratch + MLOps)\nDescription:\nImplemented a decoder-only Transformer architecture from scratch in PyTorch for autoregressive text generation using the WikiText-2 dataset. Designed core transformer components, built a modular architecture, and implemented a training pipeline with checkpointing and evaluation. Developed multiple text generation strategies and created an API inference service using FastAPI, containerized with Docker for reproducible deployment.\nTechnologies: PyTorch, FastAPI, Docker, Transformers, MLOps\n\nProject: Immersify \u2013 AI Powered Immersive Reading Experience\nDescription:\nDeveloped an AI-powered accessibility application that generates immersive sound experiences during read-aloud sessions. Implemented real-time identification of sound producing words to trigger contextual audio effects. Built the backend using AWS Bedrock for model integration and AWS Transcribe for speech-to-text processing, storing data in AWS S3. Experimented with AWS OpenSearch for semantic search.\nTechnologies: AI, AWS Bedrock, AWS Transcribe, AWS S3, AWS OpenSearch\n\nProject: Contrack - Contract Management System\nDescription:\nBuilt a full-stack SaaS platform to manage enterprise contracts and track revenue projections. Implemented CRUD operations, role-based access control, and SSO authentication. Designed analytics dashboards for monitoring contract revenue and business insights.\nTechnologies: React.js, Laravel, PHP, MySQL, REST APIs\n\nProject: Perceptron From Scratch\nDescription:\nImplemented a perceptron neural network from scratch using NumPy to understand core deep learning mechanics. Demonstrated forward propagation, backpropagation, and gradient descent without relying on ML frameworks. Trained and evaluated the model on the Diabetes dataset from Kaggle.\nTechnologies: NumPy",
             "metadata": {
                 "section": "projects",
                 "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
             }
         },
         {
-            "content": "Company: Experion Technologies\nRole: Software Engineer\nDescription:\nDelivered web analytics solutions for a US-based automobile manufacturer using Adobe Experience Platform, supporting campaigns reaching 2M+ monthly visitors. Built website-wide event tagging infrastructure for 100+ custom user interactions. Integrated third-party marketing and analytics pixels. Built and analyzed analytics dashboards to support product and marketing decisions. Collaborated with stakeholders and clients, contributing to securing 2 additional projects.\n\nCompany: Experion Technologies\nRole: Associate Software Engineer\nDescription:\nWorked on multiple international projects delivering production-ready web applications. Integrated CRM systems with product platforms to improve customer acquisition workflows. Maintained and optimized production systems by resolving bugs and improving application performance. Migrated legacy technology stacks to newer frameworks, enhancing maintainability and system performance.\n\nCompany: Experion Technologies\nRole: Trainee Software Engineer\nDescription:\nTrained in full-stack web development and built production-ready applications. Developed and deployed a Contract Management System (Contrack) for tracking enterprise contracts and revenue projections. Created and released 10+ REST API endpoints with comprehensive error handling and validation. Collaborated with a 7-member team to deliver the platform.",
+            "content": "Company: Experion Technologies\nRole: Software Engineer\nDescription:\nDelivered web analytics solutions for a large US-based automobile manufacturer using Adobe Experience Platform, supporting marketing campaigns reaching 2M+ monthly visitors. Built website-wide event tagging infrastructure for 100+ custom user interactions. Integrated multiple third-party marketing and analytics pixels. Built and analyzed analytics dashboards. Collaborated with stakeholders and clients, contributing to securing 2 additional projects.\n\nCompany: Experion Technologies\nRole: Associate Software Engineer\nDescription:\nWorked across multiple international projects delivering production-ready web applications. Integrated CRM systems with product platforms. Maintained and optimized production systems by resolving bugs and improving performance. Migrated legacy technology stacks to newer frameworks, enhancing maintainability and system performance. Received team appreciation for a critical migration.\n\nCompany: Experion Technologies\nRole: Trainee Software Engineer\nDescription:\nTrained in full-stack web development and built production-ready applications. Developed and deployed a Contract Management System (Contrack) for tracking enterprise contracts and revenue projections. Created and released 10+ REST API endpoints with error handling and validation. Collaborated with a 7-member team to deliver the platform.",
             "metadata": {
                 "section": "experience",
                 "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
@@ -35,6 +35,152 @@
                 "section": "education",
                 "college": "SCMS School of Engineering and Technology",
                 "file_name": "Athul___AI_Engineer_Resume_latest.pdf"
+            }
+        },
+        {
+            "content": "# Introduction and Hobbies\nMy name is Athul V Nair and I'm from Aluva, Ernakulam, Kerala. I enjoy a variety of hobbies including going to the gym, playing musical instruments, video gaming, and watching movies. My interests lie in technology, coding, music, fitness and workouts, gaming, and cinema.  \nI have developed a strong passion for Artificial Intelligence and emerging technologies, and I am highly motivated to build a career as an AI Engineer. I am constantly exploring new advancements in AI, including large language models, agentic systems, RAG applications and real-world AI applications, and I actively invest time in learning and experimenting with these technologies.",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Introduction and Hobbies",
+                "Header 1": "Introduction and Hobbies"
+            }
+        },
+        {
+            "content": "# Education Details\nI completed my Class 10 education in the general stream from Jyothi Nivas Public School, Aluva under the CBSE board, where I secured a CGPA of 9.2. I then pursued my Class 12 education in Computer Science with PCME from the same school under the CBSE board, achieving a CGPA of 7.5. After that, I completed my Bachelor of Technology (BTech) degree from SCMS School of Engineering and Technology, Karukutty under APJ Abdul Kalam Technological University, graduating with a CGPA of 8.2.",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Education Details",
+                "Header 1": "Education Details"
+            }
+        },
+        {
+            "content": "# Certifications\nTo align my skills with my passion for AI, I have earned certifications such as \u201cPython for Data Science\u201d from NPTEL and completed specialized courses on Large Language Models (LLM) and Agentic AI from Hugging Face. These learning experiences have strengthened my understanding of modern AI systems and reinforced my goal of transitioning into an AI-focused role. I am particularly excited about working with intelligent systems, building AI-driven solutions, and contributing to innovative projects in this rapidly evolving field.",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Certifications",
+                "Header 1": "Certifications"
+            }
+        },
+        {
+            "content": "# Professional Achievements\nIn my professional experience, I have been recognized for my contributions through team appreciations. In one instance, I was part of a team that delivered a high-impact project for a US-based client ahead of schedule, aligning with the product\u2019s soft launch. I contributed to maintaining zero defects while ensuring strong technical execution and effective client communication, which resulted in excellent customer feedback highlighting our performance, collaboration, and commitment to excellence. In another instance, I was recognized for my key contributions to a large-scale Model Year launch for a global US automotive client. I demonstrated strong ownership, dedication, and attention to detail by providing consistent overnight support during critical phases and maintaining availability, which helped ensure a seamless rollout with near-zero hypercare issues and alignment with overall marketing objectives.",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Professional Achievements",
+                "Header 1": "Professional Achievements"
+            }
+        },
+        {
+            "content": "# Contact Information  \n- Email: athulvnair2001@gmail.com\n- Phone: +91 8156941130\n- LinkedIn: https://www.linkedin.com/in/athul-v-nair-dev/\n- GitHub: https://github.com/athul-v-nair/\n- Website: https://athul-v-nair-portfolio.vercel.app/",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Contact Information",
+                "Header 1": "Contact Information"
+            }
+        },
+        {
+            "content": "# Articles and Blogs  \n- Rethinking RAG: Journey into Vectorless RAG with PageIndex.\nURL: https://medium.com/@athulvinod.dev/rethinking-rag-journey-into-vectorless-rag-with-pageindex-9ecc27afe107",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Articles and Blogs",
+                "Header 1": "Articles and Blogs"
+            }
+        },
+        {
+            "content": "# Future plans\nI am now actively working towards transitioning into an AI Engineer role, where I can apply my technical background, problem-solving skills, and growing expertise in AI to build impactful and intelligent solutions.",
+            "metadata": {
+                "source": "data/raw\\Athul_Personal.md",
+                "file_name": "Athul_Personal.md",
+                "file_type": "md",
+                "section": "Future plans",
+                "Header 1": "Future plans"
+            }
+        },
+        {
+            "content": "# Projects History  \nIncludes the projects which are tried for learning and and real ones. Acending order - latest one is first and oldest one last",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History",
+                "Header 1": "Projects History"
+            }
+        },
+        {
+            "content": "## Project 1: Vectorless RAG - Interview QA  \n-  Built a RAG system without vector embeddings, using hierarchical document reasoning to improve context retention and reduce fragmented retrieval.\n- Implemented structure-first indexing (Sections \u2192 Subsections \u2192 Paragraphs) with PageIndex, enabling precise navigation of long documents (60+ pages).\n- Replaced similarity search with LLM-driven reasoning, improving relevance for complex, multi-step queries.\n- Achieved more context-complete and cited answers compared to traditional chunk-based RAG approaches.\n- Tech Stack: Python, PageIndex, Groq (LLaMA 3/3.1).\n- Github Repository: https://github.com/athul-v-nair/vectorless-interview-qa-prep",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 1: Vectorless RAG - Interview QA",
+                "Header 1": "Projects History",
+                "Header 2": "Project 1: Vectorless RAG - Interview QA"
+            }
+        },
+        {
+            "content": "## Project 2: Finetuning DistilBERT model to predict Movie Genres  \n-  Fine-tuned distilbert-base-uncased on a 8,000-sample movie dataset to classify titles and synopses into 10 genres, improving validation accuracy from a random 10% baseline to ~39% within 3 epochs on a CPU-constrained environment.\n- Diagnosed and resolved common fine-tuning failure modes including overfitting, learning rate instability, and class imbalance through iterative experimentation.\n- Implemented full training pipeline using Hugging Face Trainer API with warmup scheduling, cosine learning rate decay, early stopping, and dropout regularization to improve generalization.\n- Explored model selection trade-offs between MiniLM, DistilBERT, and BERT-base, observing real-world impact of architecture choices on convergence and accuracy.\n- Analysed training curves to identify overfitting (train loss 0.81 vs val loss 2.26) and applied corrective techniques like including a bigger max_length tuning for longer synopses.\n- Tech Stack: Hugging Face Transformers, PyTorch, Datasets, scikit-learn.",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 2: Finetuning DistilBERT model to predict Movie Genres",
+                "Header 1": "Projects History",
+                "Header 2": "Project 2: Finetuning DistilBERT model to predict Movie Genres"
+            }
+        },
+        {
+            "content": "## Project 3: Portfolio AI Assistant  \n-  Built a Retrieval-Augmented Generation (RAG)chatbot for a portfolio website, enabling context-aware\nquestion answering over personal and project data.\n- Designed and implemented end-to-end pipelines for ingestion (parsing, chunking, embedding, vector\nstorage), retrieval(query embedding, chat history) and generation.\n- Implemented session-based conversational memory, allowing responses to leverage historical chat con\ntext for improved coherence.\n- Developed scalable backend API using FastAPI and integrated seamlessly with frontend.\n- Evaluated system using retrieval and generation metrics, achieving Recall@3: 1.0, MRR: 1.0, with Con\ntext Precision: 0.50\n- Tech Stack: LangChain, ChromaDB, FastAPI, Docker, Git\n- Github Repository: https://github.com/athul-v-nair/portfolio-rag-chatbot",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 3: Portfolio AI Assistant",
+                "Header 1": "Projects History",
+                "Header 2": "Project 3: Portfolio AI Assistant"
+            }
+        },
+        {
+            "content": "## Project 4: Text Generation Transformer (From Scratch + MLOps)  \n- Implemented a decoder-only Transformer architecture from scratch in PyTorch for autoregressive\ntext generation using the WikiText-2 dataset.\n- Designed core transformer components including multi-head causal self-attention, positional embed\ndings, masking, and feed-forward networks.\n- Built a modular architecture consisting of token embeddings, stacked transformer blocks, residual connec\ntions, and final projection layers.\n- Implemented training pipeline with checkpointing, metric logging, and perplexity evaluation.\n- Developed multiple text generation strategies including greedy decoding, temperature sampling, top-k,\ntop-p, and hybrid sampling.\n- Created an API inference service using FastAPI and containerized the pipeline using Docker for repro\nducible deployment.\n- Github Repository: https://github.com/athul-v-nair/text-generation-mlops",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 4: Text Generation Transformer (From Scratch + MLOps)",
+                "Header 1": "Projects History",
+                "Header 2": "Project 4: Text Generation Transformer (From Scratch + MLOps)"
+            }
+        },
+        {
+            "content": "## Project 5: Immersify \u2013 AI Powered Immersive Reading Experience  \n- Immersive Reading Experience for Kids & Visually Impaired\n- Developed an AI-powered accessibility application that generates immersive sound experiences during\nread-aloud sessions.\n- Implemented real-time identification of sound producing words to trigger contextual audio effects\nbased on detected words (e.g., rain sounds when \u201drain\u201d is read).\n- Developed an AI-powered immersive reading application that received positive feedback from judges and\nparticipants during a hackathon evaluation.\n- Built the backend using AWS Bedrock for model integration and AWS Transcribe for speech-to-text\nprocessing, while storing application data in AWS S3.\n- Experimented with AWS OpenSearch to accelerate semantic search and retrieval of contextual audio\ntriggers; evaluated performance gains against infrastructure cost to guide architectural decisions.",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 5: Immersify \u2013 AI Powered Immersive Reading Experience",
+                "Header 1": "Projects History",
+                "Header 2": "Project 5: Immersify \u2013 AI Powered Immersive Reading Experience"
+            }
+        },
+        {
+            "content": "## Project 6: Contrack - Contract Management System  \n- Enterprise contract management and tracking system\n- Built a full-stack SaaS platform to manage enterprise contracts and track revenue projections.\n- Implemented CRUD operations, role-based access control, and SSO authentication.\n- Designed analytics dashboards for monitoring contract revenue and business insights.\n- Tech Stack: React.js, Laravel, PHP, MySQL, REST APIs.\n- Github Repository: https://github.com/PranavSR04/ConTrack---RJS-Experion",
+            "metadata": {
+                "source": "data/raw\\Athul_Projects.md",
+                "file_name": "Athul_Projects.md",
+                "file_type": "md",
+                "section": "Projects History - Project 6: Contrack - Contract Management System",
+                "Header 1": "Projects History",
+                "Header 2": "Project 6: Contrack - Contract Management System"
             }
         }
     ]

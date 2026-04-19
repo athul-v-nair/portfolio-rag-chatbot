@@ -12,35 +12,43 @@ The core challenge with resume PDFs is that standard document parsers (including
  
 This pipeline solves that by using a Gemini LLM to read the full document and return a structured JSON object with canonical resume sections. That structured output is converted back into LangChain Documents with clean section metadata, chunked, embedded, and stored in ChromaDB.
 
+1. **PDF Resumes**: Reassembled and parsed by a Gemini LLM into structured JSON to overcome layout inconsistency.
+2. **Markdown Files**: Processed deterministically using header-based splitting (`MarkdownParser`) for precise context retention.
+
+Embeddings are stored in a local **ChromaDB** collection, which the generation layer uses to provide grounded, source-attributed answers.
+
 ---
 
 ## Architecture
 
 ```
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│  Load    │──▶│  Parse   │──▶│  Chunk   │──▶│  Embed   │──▶│  Store   │
-│          │   │          │   │          │   │          │   │          │
-│ PDF/MD/  │   │ Gemini   │   │ Section- │   │ Gemini   │   │ ChromaDB │
-│ TXT via  │   │ 2.5 Flash│   │ aware    │   │ Embedding│   │ persisted│
-│ LangChain│   │ → JSON   │   │ chunker  │   │          │   │ on disk  │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
- 
-                              ┌──────────────────────────────────────┐
-                              │             Query Flow                │
-                              │                                       │
-                              │  User query ──▶ ChromaDB retrieval   │
-                              │       ──▶ Gemini 2.5 Flash generation │
-                              │       ──▶ Grounded answer + sources  │
-                              └──────────────────────────────────────┘
+┌──────────┐      Path A: PDF Resumes         ┌──────────────┐
+│  Load    │─────────────────────────────────▶│ LLM Parser   │──┐
+│ (UTF-8)  │                                  │ (JSON extraction)│  │
+│          │                                  └──────────────┘  │
+│ PDF/MD/  │                                                    │   ┌──────────┐   ┌──────────┐
+│ TXT via  │      Path B: Markdown Documents   ┌──────────────┐  ├──▶│ Chunk &  │──▶│ ChromaDB │
+│ LangChain│─────────────────────────────────▶│ Header Split │──┘   │ Embed    │   │ persisted│
+└──────────┘                                  │ (HTML Strip) │      └──────────┘   └──────────┘
+                                              └──────────────┘
+                               ┌───────────────────────────────────────────┐
+                               │             Query Flow                    │
+                               │                                           │
+                               │  User Query + History ──▶ ChromaDB search │
+                               │      ──▶ Gemini 2.5 Flash generation      │
+                               │      ──▶ Response + Cited Sources         │
+                               └───────────────────────────────────────────┘
 ```
 
-**Load:** LangChain loaders (`PyPDFLoader`, `UnstructuredMarkdownLoader`, `TextLoader`) read files from `data/raw` and attach `file_type` and `file_name` metadata.
+**Load:** LangChain loaders read files from `data/raw`. All text-based loaders explicitly use `UTF-8` encoding to ensure cross-platform compatibility.
 
-**Parse:** Pages are first reassembled into a single full-text string per file, since section content frequently spans page breaks. The full text is sent to `gemini-2.5-flash` with a structured prompt that instructs the model to return a JSON object with keys: `summary`, `skills`, `projects`, `experience`, `education`. The JSON response is parsed and each section is converted into a LangChain Document with a `section` metadata key.
+**Parse:**
+- **LLM Path (PDFs):** Sends full-text reassembled from pages to `gemini-2.5-flash` to extract a structured JSON representation (`summary`, `experience`, etc.).
+- **Deterministic Path (Markdown):** Uses `MarkdownHeaderTextSplitter` to slice documents at header levels (`#` to `#####`). Raw HTML tags are automatically stripped via regex.
 
-**Chunk:** A section-aware chunker groups parsed elements by `(file_name, section)`. If a section fits within the configured `chunk_size`, it becomes a single chunk. Oversized sections are further split with `RecursiveCharacterTextSplitter` while preserving the `section` metadata on every resulting chunk. Plain text paragraphs follow a simpler path — each paragraph is a chunk unless it exceeds the size limit.
+**Chunk:** A section-aware logic preserves the integrity of parsed sections. Each section becomes a retrieval unit, ensuring the LLM receives complete context rather than fragmented text.
 
-**Embed:** Chunks are encoded using `GoogleGenerativeAIEmbeddings` (`gemini-embedding-2-preview`). If the Google API is unavailable, embedding fails and raises an error. The fallback to Hugging Face embeddings has been removed, since any mismatch between the vector embedding model and the query embedding model would cause retrieval to fail.
+**Embed:** Chunks are encoded via `GoogleGenerativeAIEmbeddings` using the `gemini-embedding-2-preview` model.
 
 **Store:** Embeddings and metadata are persisted in a local ChromaDB collection. The store supports incremental upserts and full rebuilds.
 
@@ -73,6 +81,7 @@ Sending the full text to an LLM sidesteps layout detection entirely. The model u
     ├── ingestion/
     │   ├── loaders.py                # File type detection and LangChain loaders
     │   ├── document_parser.py        # Page reassembly, LLM sectioning, JSON → Document
+    │   ├── markdown_parser.py        # Markdown header splitting
     │   ├── chunker.py                # Chunk ID assignment; splits oversized sections
     │   ├── embedding.py              # Gemini embedding model init
     │   ├── vector_store.py           # ChromaDB wrapper (add, upsert, search)
@@ -163,6 +172,8 @@ uvicorn api.api:app --reload --port 8000
 ```
  
 The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+Chat history is maintained **server-side in-memory** keyed by `session_id`. Each session retains the last 10 turns.
+
  
 ### 3. Send a query
  
@@ -281,26 +292,6 @@ The dataset lives at `src/evaluation/evaluation_dataset.json`. Each entry contai
 The API is **stateless** — the server stores no session data. The frontend is responsible for maintaining history and sending the last N turns with each request.
  
 This design works with zero infrastructure on any free-tier hosting platform. The server enforces a hard cap of 10 messages; if the frontend sends more, older turns are silently trimmed.
- 
-**Recommended frontend pattern:**
- 
-```javascript
-const history = [];
- 
-async function sendMessage(userQuery) {
-  const response = await fetch('/chat', {
-    method: 'POST',
-    body: JSON.stringify({ query: userQuery, history: history.slice(-10) })
-  });
-  const data = await response.json();
- 
-  // Append both turns to local history
-  history.push({ role: 'user',      content: userQuery });
-  history.push({ role: 'assistant', content: data.answer });
- 
-  return data.answer;
-}
-```
 
 ---
 
@@ -328,9 +319,9 @@ Every stored chunk carries the following metadata, available for filtered retrie
 - [x] Conversation history (stateless, client-owned, 10-turn cap)
 - [x] RAG evaluation (Recall@K, MRR, Context Precision, Answer Similarity)
 - [x] Docker setup and containerized deployment
+- [x] Markdown and plain text ingestion
 - [ ] Rate Limiting and Generation Model Fallback
 - [ ] Semantic answer similarity metric (embedding-based, replaces token overlap)
-- [ ] Markdown and plain text ingestion
 - [ ] Reranking (if retrieval precision degrades at scale)
  
 ---
