@@ -80,7 +80,7 @@ class Loader():
             List[Document]: LangChain Document objects with metadata
         """
         try:
-            loader = TextLoader(file_path)
+            loader = TextLoader(file_path, encoding='utf-8')
             md_documents = loader.load()
             
             # Adding some more metadata
@@ -105,7 +105,7 @@ class Loader():
             List[Document]: LangChain Document objects with metadata
         """
         try:
-            loader = TextLoader(file_path)
+            loader = TextLoader(file_path, encoding='utf-8')
             txt_documents = loader.load()
             
             # Adding some more meta data

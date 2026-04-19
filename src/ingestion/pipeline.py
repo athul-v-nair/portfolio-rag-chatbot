@@ -1,10 +1,11 @@
 from langchain_chroma import Chroma
-import os
+import os,sys
 
 from src.ingestion.loaders import Loader
 from src.ingestion.vector_store import VectorStore
 from src.utils.logger import logger
 from src.ingestion.document_parser import DocumentParser
+from src.ingestion.markdown_parser import MarkdownParser
 from src.ingestion.chunker import Chunker
 
 from src.utils.constants import DB_PATH, COLLECTION_NAME
@@ -52,8 +53,21 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
         
         # 2 Parse documents
         logger.info("Parsing the documents")
-        document_parser = DocumentParser(raw_documents)
-        parsed_documents = document_parser.parsed_documents
+        
+        pdf_docs = [doc for doc in raw_documents if doc.metadata.get("file_type") == "pdf"]
+        md_docs = [doc for doc in raw_documents if doc.metadata.get("file_type") == "md"]
+        
+        parsed_documents = []
+        if pdf_docs:
+            logger.info("Parsing PDF documents using LLM")
+            document_parser = DocumentParser(pdf_docs)
+            parsed_documents.extend(document_parser.parsed_documents)
+            
+        if md_docs:
+            logger.info("Parsing Markdown documents using Header Splitter")
+            markdown_parser = MarkdownParser(md_docs)
+            parsed_documents.extend(markdown_parser.parsed_documents)
+            
         logger.info("Parsing Completed")
         logger.info(f"Parsed into {len(parsed_documents)} element(s).")
         logger.info(f"First 5 Documents into {parsed_documents[:5]}.")
@@ -98,4 +112,5 @@ def data_ingestion_pipeline(directory: str = 'data/raw', rebuild: bool = False) 
         raise Exception(f"Error in ingestion pipeline: {e}")
 
 if __name__ == "__main__":
-    data_ingestion_pipeline()
+    rebuild = "--rebuild" in sys.argv
+    data_ingestion_pipeline(rebuild=rebuild)
